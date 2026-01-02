@@ -1,7 +1,6 @@
 // MongoDB Database Setup Script
 // Run with: mongosh "YOUR_CONNECTION_STRING" < mongodb-config.js
 
-use effortee;
 
 // ========================================
 // CREATE COLLECTIONS WITH VALIDATION
