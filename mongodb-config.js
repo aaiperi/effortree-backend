@@ -1,19 +1,7 @@
 // MongoDB Database Setup Script
-// Run this after MongoDB is installed: mongosh < mongodb-config.js
+// Run with: mongosh "YOUR_CONNECTION_STRING" < mongodb-config.js
 
-// ========================================
-// CREATE ADMIN USER
-// ========================================
-db.createUser({
-  user: "effortee_admin",
-  pwd: "CHANGE_THIS_PASSWORD_123", // ⚠️ Change this in production!
-  roles: [
-    { role: "readWrite", db: "effortee" },
-    { role: "dbAdmin", db: "effortee" }
-  ]
-});
-
-print("✅ Admin user created");
+use effortee;
 
 // ========================================
 // CREATE COLLECTIONS WITH VALIDATION
@@ -28,25 +16,20 @@ db.createCollection("users", {
       properties: {
         email: {
           bsonType: "string",
-          pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
           description: "Valid email address required"
         },
         name: {
           bsonType: "string",
-          minLength: 1,
-          description: "User name required"
+          minLength: 1
         },
         role: {
-          enum: ["student", "parent", "admin"],
-          description: "Role must be student, parent, or admin"
+          enum: ["student", "parent", "admin"]
         },
         password: {
-          bsonType: "string",
-          description: "Hashed password"
+          bsonType: "string"
         },
         created_at: {
-          bsonType: "string",
-          description: "Creation date in YYYY-MM-DD format"
+          bsonType: "string"
         }
       }
     }
@@ -55,7 +38,7 @@ db.createCollection("users", {
 
 print("✅ Users collection created");
 
-// QUESTS COLLECTION (matching your schema)
+// QUESTS COLLECTION
 db.createCollection("quests", {
   validator: {
     $jsonSchema: {
@@ -64,58 +47,43 @@ db.createCollection("quests", {
       properties: {
         id: {
           bsonType: "string",
-          pattern: "^quest_",
-          description: "Quest ID starting with 'quest_'"
+          pattern: "^quest_"
         },
         title: {
           bsonType: "string",
-          minLength: 1,
-          maxLength: 200,
-          description: "Quest title required"
+          minLength: 1
         },
         description: {
-          bsonType: "string",
-          description: "Optional quest description"
+          bsonType: "string"
         },
         subject: {
-          bsonType: "string",
-          description: "Subject area (e.g., Math, Science)"
+          bsonType: "string"
         },
         topic: {
-          bsonType: "string",
-          description: "Specific topic within subject"
+          bsonType: "string"
         },
         effort_type: {
-          bsonType: "string",
-          description: "Type of effort (e.g., focus_time)"
+          bsonType: "string"
         },
         studied_minutes: {
           bsonType: "int",
-          minimum: 0,
-          description: "Minutes already studied"
+          minimum: 0
         },
         suggested_minutes: {
           bsonType: "int",
-          minimum: 1,
-          description: "Suggested study duration in minutes"
+          minimum: 1
         },
         deadline: {
-          bsonType: "string",
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-          description: "Deadline in YYYY-MM-DD format"
+          bsonType: "string"
         },
         visibility: {
-          enum: ["private", "shared"],
-          description: "Quest visibility setting"
+          enum: ["private", "shared"]
         },
         status: {
-          enum: ["prepare", "active", "done"],
-          description: "Quest status: prepare, active, or done"
+          enum: ["prepare", "active", "done"]
         },
         created_at: {
-          bsonType: "string",
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-          description: "Creation date in YYYY-MM-DD format"
+          bsonType: "string"
         }
       }
     }
@@ -125,50 +93,41 @@ db.createCollection("quests", {
 print("✅ Quests collection created");
 
 // ========================================
-// CREATE INDEXES FOR PERFORMANCE
+// CREATE INDEXES
 // ========================================
 
-// User indexes
 db.users.createIndex({ email: 1 }, { unique: true });
 db.users.createIndex({ role: 1 });
 
-print("✅ User indexes created");
-
-// Quest indexes
 db.quests.createIndex({ id: 1 }, { unique: true });
 db.quests.createIndex({ status: 1 });
 db.quests.createIndex({ subject: 1 });
 db.quests.createIndex({ deadline: 1 });
 db.quests.createIndex({ created_at: -1 });
-db.quests.createIndex({ status: 1, deadline: 1 }); // Compound index
 
-print("✅ Quest indexes created");
+print("✅ Indexes created");
 
 // ========================================
 // INSERT SAMPLE DATA
 // ========================================
 
-// Sample users
 db.users.insertMany([
   {
-    email: "student1@effortee.com",
-    name: "Alice Student",
+    email: "student@effortee.com",
+    name: "Sample Student",
     role: "student",
-    password: "hashed_password_here", // In production, use bcrypt
-    created_at: "2025-01-15"
+    password: "hashed_password_here",
+    created_at: "2025-01-02"
   },
   {
-    email: "parent1@effortee.com",
-    name: "Bob Parent",
+    email: "parent@effortee.com",
+    name: "Sample Parent",
     role: "parent",
     password: "hashed_password_here",
-    created_at: "2025-01-15"
+    created_at: "2025-01-02"
   }
 ]);
 
-print("✅ Sample users inserted");
-
-// Sample quests
 db.quests.insertMany([
   {
     id: "quest_001",
@@ -182,47 +141,24 @@ db.quests.insertMany([
     deadline: "2025-02-20",
     visibility: "shared",
     status: "active",
-    created_at: "2025-02-18"
+    created_at: "2025-01-02"
   },
   {
     id: "quest_002",
     title: "Complete Chapter 3",
-    description: "Read and take notes on Chapter 3",
+    description: "Read and take notes",
     subject: "Science",
-    topic: "Biology - Cell Structure",
+    topic: "Biology",
     effort_type: "reading",
     studied_minutes: 0,
     suggested_minutes: 45,
     deadline: "2025-02-25",
     visibility: "shared",
     status: "prepare",
-    created_at: "2025-02-18"
-  },
-  {
-    id: "quest_003",
-    title: "Practice Problems",
-    description: "Complete 20 practice problems from workbook",
-    subject: "Math",
-    topic: "Quadratic Equations",
-    effort_type: "practice",
-    studied_minutes: 30,
-    suggested_minutes: 60,
-    deadline: "2025-02-22",
-    visibility: "private",
-    status: "active",
-    created_at: "2025-02-17"
+    created_at: "2025-01-02"
   }
 ]);
 
-print("✅ Sample quests inserted");
-
-// ========================================
-// VERIFY SETUP
-// ========================================
-
-print("\n📊 Database Setup Summary:");
-print("─────────────────────────────────");
-print("Users count: " + db.users.countDocuments());
-print("Quests count: " + db.quests.countDocuments());
-print("\n✨ MongoDB configuration complete!");
-print("⚠️  Remember to change the admin password in production!");
+print("\n📊 Setup Complete!");
+print("Users: " + db.users.countDocuments());
+print("Quests: " + db.quests.countDocuments());
