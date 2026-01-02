@@ -1,6 +1,10 @@
-__pycache__/
+# Node.js
+node_modules/
+npm-debug.log
+
+# Environment variables
 .env
-.venv/
-venv/
 .env.local
+
+# OS
 .DS_Store
